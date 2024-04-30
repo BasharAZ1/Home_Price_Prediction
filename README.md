@@ -13,11 +13,11 @@ Ensure you have Python 3.8 or later installed on your system. If not, download i
 ### Installation
 
 Clone the repository and navigate into it:
-```bash
+bash
 git clone https://github.com/BasharAZ1/Home_Price_Prediction.git
 
 
-Set up and activate a virtual environment:
+###Set up and activate a virtual environment:
 
 bash
 Copy code
