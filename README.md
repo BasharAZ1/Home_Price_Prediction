@@ -1,7 +1,17 @@
-
 # House Rent or Buy Predictor
 
-This Flask application assists users in determining whether to rent or buy a house in Islamabad, Karachi, Rawalpindi, and Faisalabad, providing tailored recommendations based on user input.
+This Flask application assists users in determining whether to rent or buy a house in Islamabad, Karachi, Rawalpindi, and Faisalabad. It provides tailored recommendations based on user input and predicts prices for either renting or buying properties.
+
+## Application Overview
+
+The application takes the following inputs from the user to provide a recommendation:
+
+- **City**: The city where the user is interested in renting or buying a property. Choices include Islamabad, Karachi, Rawalpindi, and Faisalabad.
+- **Number of Bathrooms**: The desired number of bathrooms in the property.
+- **Area**: The total area of the property in square feet.
+- **Bedrooms**: The number of bedrooms desired in the property.
+
+Based on these inputs, the application uses a predictive model to estimate the price of renting or buying the specified property in the selected city. This helps users make informed decisions about whether renting or buying is a more feasible option based on their financial situation and market conditions.
 
 ## Getting Started
 
