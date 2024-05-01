@@ -5,29 +5,21 @@ import sklearn
 
 
 
-poly = None
-lin = None
-scaler = None
-
-def load_model_components():
-    global poly, lin, scaler
-    with open('rent_model/poly_transformer_rent.pkl', 'rb') as f:
-        poly = pickle.load(f)
-    with open('rent_model/trained_model_rent.pkl', 'rb') as f:
-        lin = pickle.load(f)
-    with open('rent_model/scaler_rent.pkl', 'rb') as f:
-        scaler = pickle.load(f)
+model_components = {
+    'rent': {'poly': None, 'lin': None, 'scaler': None},
+    'buy': {'poly': None, 'lin': None, 'scaler': None}
+}
 
 
+def load_model_components(model_type):
+    base_path = f"{model_type}_model/"
+    with open(f'{base_path}poly_transformer_{model_type}.pkl', 'rb') as f:
+        model_components[model_type]['poly'] = pickle.load(f)
+    with open(f'{base_path}trained_model_{model_type}.pkl', 'rb') as f:
+        model_components[model_type]['lin'] = pickle.load(f)
+    with open(f'{base_path}scaler_{model_type}.pkl', 'rb') as f:
+        model_components[model_type]['scaler'] = pickle.load(f)
 
-def load_model_components_buy():
-    global poly, lin, scaler
-    with open('buy_model/poly_transformer_buy.pkl', 'rb') as f:
-        poly = pickle.load(f)
-    with open('buy_model/trained_model_buy.pkl', 'rb') as f:
-        lin = pickle.load(f)
-    with open('buy_model/scaler_buy.pkl', 'rb') as f:
-        scaler = pickle.load(f)
 
 
 
@@ -36,76 +28,42 @@ def homepage():
 
 
 def rent():
-    return render_template("rent.html")
+    return render_template("listing_input.html", action="/predict", title="Enter Rent Details")
+
 def buy():
-    return render_template("buy.html")
+    return render_template("listing_input.html", action="/predict_buy", title="Enter Buy Details")
 
 
 
 
-def predict():
-
-    load_model_components()
-        
+def predict(model_type):
+    load_model_components(model_type)
 
     baths = request.form.get('baths', type=int)
     area = request.form.get('area', type=float)
     city = request.form.get('city')
     bedrooms = request.form.get('bedrooms', type=int)
+
+    city_map = {
+        'Islamabad': [1, 0, 0, 0],
+        'Karachi': [0, 1, 0, 0],
+        'Rawalpindi': [0, 0, 1, 0],
+        'Faisalabad': [0, 0, 0, 1]
+    }
     
-    city_Islamabad = 0
-    city_Karachi = 0
-    city_Rawalpindi = 0
-
-    # One-hot encode the city input
-    if city == 'Islamabad':
-        city_Islamabad = 1
-    elif city == 'Karachi':
-        city_Karachi = 1
-    elif city == 'Rawalpindi':
-        city_Rawalpindi = 1
-
-    # Preprocess the data
-    features = np.array([[bedrooms, baths, area, city_Islamabad, city_Karachi, city_Rawalpindi]])
-    features_scaled = scaler.transform(features)
-    features_poly = poly.transform(features_scaled)
-    
-    # Predict
-    prediction = lin.predict(features_poly)
-    
-    return render_template('result.html', prediction=round(prediction[0], 2))
-
-
-
-def predict_buy():
-    load_model_components_buy()
-    baths = request.form.get('baths', type=int)
-    area = request.form.get('area', type=float)
-    city = request.form.get('city')
-    bedrooms = request.form.get('bedrooms', type=int)
-    
-    city_Islamabad = 0
-    city_Karachi = 0
-    city_Rawalpindi = 0
-    city_Faisalabad=0
-
-    # One-hot encode the city input
-    if city == 'Islamabad':
-        city_Islamabad = 1
-    elif city == 'Karachi':
-        city_Karachi = 1
-    elif city == 'Rawalpindi':
-        city_Rawalpindi = 1
+    if model_type == 'rent':
+        city_features = city_map[city][:3]  # Only first three cities for rent
     else:
-        city_Faisalabad=1
-        
+        city_features = city_map[city]      # All four cities for buy
 
     # Preprocess the data
-    features = np.array([[bedrooms, baths, area, city_Islamabad, city_Karachi, city_Rawalpindi,city_Faisalabad]])
-    features_scaled = scaler.transform(features)
-    features_poly = poly.transform(features_scaled)
-    
+    features = np.array([[bedrooms, baths, area] + city_features])
+    features_scaled = model_components[model_type]['scaler'].transform(features)
+    features_poly = model_components[model_type]['poly'].transform(features_scaled)
+
     # Predict
-    prediction = lin.predict(features_poly)
-    
+    prediction = model_components[model_type]['lin'].predict(features_poly)
     return render_template('result.html', prediction=round(prediction[0], 2))
+
+
+
